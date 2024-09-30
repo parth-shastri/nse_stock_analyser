@@ -198,13 +198,17 @@ async def main(message: cl.Message):
         # Update the user session with the new message history
         cl.user_session.set("message_history", message_history)
 
+        out_message = cl.Message(author="Agent", content="")
+        # a facade for streaming
+        for char in result.response:
+            await out_message.stream_token(char)
+
         # Remove the thinking message
         await thinking_msg.remove()
 
         # print("here")
         # Send a new message with the result instead of updating
-        await cl.Message(content=result.response, author="Agent").send()
-
+        await out_message.send()
         # save chat history
         id = cl.user_session.get("session_id")
         await save_chat_history(
